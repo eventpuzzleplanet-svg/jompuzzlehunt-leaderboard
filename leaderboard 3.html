@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leaderboard</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    html {
+      height: 100%;
+      overflow-y: scroll; /* ✅ always show scrollbar to prevent background shifting */
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: #f4f4f4 url('background.png') no-repeat center center fixed;
+      background-size: cover;
+      background-attachment: fixed; /* lock background */
+      color: #333;
+      text-align: center;
+      min-height: 100%; /* keep full height */
+    }
+
+    /* Top Center Logo + Title */
+    .top-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .top-center img {
+      height: 100px;
+    }
+
+    .top-center h1 {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: #222;
+      letter-spacing: 1px;
+    }
+
+    /* Tabs */
+    .tabs {
+      margin: 20px 0;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      margin: 0 5px;
+      border: none;
+      border-radius: 8px;
+      background: #ddd;
+      cursor: pointer;
+      font-size: 16px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .tab-btn:hover {
+      background: #ccc;
+      transform: translateY(-2px);
+    }
+
+    .tab-btn.active {
+      background: #4a90e2;
+      color: white;
+    }
+
+    /* Leaderboard Box */
+    .leaderboard {
+      max-width: 600px;
+      margin: 0 auto 50px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      overflow: hidden;
+      animation: fadeIn 0.8s ease-in-out;
+      padding: 12px;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 14px 18px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+      vertical-align: middle;
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    th {
+      background: linear-gradient(135deg, #4a90e2, #357ab7);
+      color: white;
+      font-size: 16px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    tr:nth-child(even) { background: #f9f9f9; }
+    tr:nth-child(odd) { background: #fff; }
+
+    tr:hover {
+      background: #eaf2ff;
+      transition: background 0.3s;
+    }
+
+    /* Top 3 Row Colors */
+    tbody tr:nth-child(1) { background: #ffeaa7; font-weight: 700; font-family: 'Poppins', sans-serif; }
+    tbody tr:nth-child(2) { background: #dfe6e9; font-weight: 700; font-family: 'Poppins', sans-serif; }
+    tbody tr:nth-child(3) { background: #fab1a0; font-weight: 700; font-family: 'Poppins', sans-serif; }
+
+    /* Medal Ranks */
+    .rank-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: bold;
+      font-family: 'Poppins', sans-serif;
+    }
+    .rank-cell img { height: 22px; }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      .leaderboard { max-width: 90%; margin: 20px auto; padding: 8px; }
+      th, td { padding: 8px; font-size: 13px; }
+      .top-center h1 { font-size: 24px; }
+      .top-center img { height: 36px; }
+      .rank-cell img { height: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Logo + Leaderboard -->
+  <div class="top-center">
+    <img src="jom logo.png" alt="Logo">
+    <h1>Leaderboard</h1>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" onclick="switchTab('solo')">Solo</button>
+    <button class="tab-btn" onclick="switchTab('pair')">Pair</button>
+  </div>
+
+  <!-- Leaderboard Table -->
+  <div class="leaderboard">
+    <table id="leaderboardTable">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data from CSV will be inserted here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    async function loadCSV(file) {
+      const tbody = document.querySelector('#leaderboardTable tbody');
+      tbody.innerHTML = ""; // Clear before loading
+
+      try {
+        const response = await fetch(file);
+        if (!response.ok) throw new Error("File not found");
+        const text = await response.text();
+
+        const rows = text.trim().split('\n').slice(1); // skip header
+        const data = rows.map(line => {
+          const [name, time] = line.split(',');
+          return { name: name.trim(), time: time.trim() };
+        });
+
+        // Sort by time (ascending)
+        data.sort((a, b) => a.time.localeCompare(b.time));
+
+        data.forEach((row, index) => {
+          const rank = index + 1;
+          let medal = "";
+          if (rank === 1) medal = '<img src="gold.png" alt="Gold">';
+          if (rank === 2) medal = '<img src="silver.png" alt="Silver">';
+          if (rank === 3) medal = '<img src="bronze.png" alt="Bronze">';
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="rank-cell"><span>${rank}</span>${medal}</td>
+            <td>${row.name}</td>
+            <td>${row.time}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; font-style:italic; color:#888; font-family:'Poppins',sans-serif;">Coming soon</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; font-style:italic; color:#888; font-family:'Poppins',sans-serif;">Coming soon</td></tr>`;
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      const tbody = document.querySelector('#leaderboardTable tbody');
+      tbody.innerHTML = ""; // Clear old data
+
+      if (tab === 'solo') {
+        document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        loadCSV('data1.csv');
+      } else if (tab === 'pair') {
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        loadCSV('data2.csv');
+      }
+    }
+  </script>
+
+</body>
+</html>
