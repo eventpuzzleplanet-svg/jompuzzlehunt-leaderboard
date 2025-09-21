@@ -11,7 +11,7 @@
   <style>
     html {
       height: 100%;
-      overflow-y: scroll; /* ✅ always show scrollbar to prevent background shifting */
+      overflow-y: scroll; /* prevent background shifting */
     }
 
     body {
@@ -19,10 +19,10 @@
       font-family: 'Roboto', sans-serif;
       background: #f4f4f4 url('background.png') no-repeat center center fixed;
       background-size: cover;
-      background-attachment: fixed; /* lock background */
+      background-attachment: fixed;
       color: #333;
       text-align: center;
-      min-height: 100%; /* keep full height */
+      min-height: 100%;
     }
 
     /* Top Center Logo + Title */
@@ -76,22 +76,46 @@
       color: white;
     }
 
+    /* Default Image Section - Vertical with gap */
+    #defaultContent {
+      display: flex;
+      flex-direction: column; /* stack vertically */
+      align-items: center;    /* center images */
+      gap: 20px;              /* space between images */
+      margin: 0 auto;         /* center the section */
+      padding: 0;             /* remove padding */
+      background: none;       /* remove any background */
+    }
+
+    #defaultContent img {
+      width: 100%;
+      max-width: 600px;       /* control image size */
+      border-radius: 0;       /* remove rounded corners */
+      box-shadow: none;       /* remove shadow */
+      transition: none;       /* remove hover effect */
+    }
+
     /* Leaderboard Box */
     .leaderboard {
       max-width: 600px;
-      margin: 0 auto 50px;
+      margin: 20px auto 50px;
       background: rgba(255, 255, 255, 0.95);
       border-radius: 20px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
       overflow: hidden;
-      animation: fadeIn 0.8s ease-in-out;
       padding: 12px;
       font-family: 'Roboto', sans-serif;
+      display: none; /* hidden until tab click */
     }
 
+    /* Fade-in Animation */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-animation {
+      animation: fadeIn 0.8s ease-in-out;
     }
 
     /* Table */
@@ -149,6 +173,7 @@
       .top-center h1 { font-size: 24px; }
       .top-center img { height: 36px; }
       .rank-cell img { height: 16px; }
+      #defaultContent { max-width: 90%; gap: 20px; }
     }
   </style>
 </head>
@@ -166,8 +191,16 @@
     <button class="tab-btn" onclick="switchTab('pair')">Pair</button>
   </div>
 
+  <!-- Default Image Section -->
+  <div id="defaultContent">
+    <img src="image1.png" alt="Image 1">
+    <img src="image2.png" alt="Image 2">
+    <img src="image3.png" alt="Image 3">
+    <img src="image4.png" alt="Image 4">
+  </div>
+
   <!-- Leaderboard Table -->
-  <div class="leaderboard">
+  <div class="leaderboard" id="leaderboardBox">
     <table id="leaderboardTable">
       <thead>
         <tr>
@@ -226,6 +259,21 @@
     }
 
     function switchTab(tab) {
+      // Hide default images, show leaderboard
+      document.getElementById("defaultContent").style.display = "none";
+      const leaderboardBox = document.getElementById("leaderboardBox");
+      leaderboardBox.style.display = "block";
+
+      // Remove previous animation class if any
+      leaderboardBox.classList.remove("fade-animation");
+
+      // Trigger reflow to restart animation
+      void leaderboardBox.offsetWidth;
+
+      // Add fade-in animation
+      leaderboardBox.classList.add("fade-animation");
+
+      // Update active tab button
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       const tbody = document.querySelector('#leaderboardTable tbody');
       tbody.innerHTML = ""; // Clear old data
