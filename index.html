@@ -14,7 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
-    :root{
+    :root {
       --bg:#f4f4f4;
       --brand:#4a90e2;
       --brand2:#357ab7;
@@ -43,7 +43,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Top-left Logo (fixed) */
     .top-left-logo {
       position: fixed;
       top: calc(var(--safe-top) + 12px);
@@ -54,7 +53,6 @@
       z-index: 20;
     }
 
-    /* Top Center Logo + Title */
     .top-center {
       display: flex;
       flex-direction: column;
@@ -79,18 +77,17 @@
       letter-spacing: .5px;
     }
 
-    /* Tabs */
     .tabs {
-     position: static;
-     z-index: auto;
-     display: flex;
-     justify-content: center;
-     gap: 10px;
-     padding: 8px 12px;
-     margin: 6px 0 10px;
-     background: transparent;
-     -webkit-backdrop-filter: none;
-     backdrop-filter: none;
+      position: static;
+      z-index: auto;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 8px 12px;
+      margin: 6px 0 10px;
+      background: transparent;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
     }
     .tab-btn {
       min-height: 44px;
@@ -110,7 +107,6 @@
     .tab-btn:hover { background: #dcdcdc; }
     .tab-btn.active { background: var(--brand); color: #fff; }
 
-    /* Card */
     .leaderboard {
       max-width: 720px;
       margin: 12px auto 60px;
@@ -122,8 +118,7 @@
       display: none; /* shown by JS */
     }
 
-    /* Scrollable table wrapper with sticky header */
-    .table-wrap{
+    .table-wrap {
       width: 100%;
       overflow: auto;
       -webkit-overflow-scrolling: touch;
@@ -136,11 +131,10 @@
         linear-gradient(to left, #fff, rgba(255,255,255,0)) right center / 16px 100% no-repeat;
     }
 
-    /* Make column widths stick */
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
+      table-layout: fixed; /* important for fixed column widths */
     }
 
     th, td {
@@ -150,10 +144,10 @@
       vertical-align: middle;
       font-size: clamp(13px, 3.6vw, 15px);
       font-weight: 500;
-      white-space: nowrap; /* default */
+      white-space: nowrap; /* default: no wrap for non-name columns */
     }
 
-    /* Rank: slim + centered + remove silver line */
+    /* Rank column */
     th:first-child,
     td:first-child {
       width: 50px;
@@ -161,21 +155,21 @@
       border-bottom: none !important;
     }
 
-    /* Score: slim + centered */
+    /* Time column */
+    th:nth-child(3),
+    td:nth-child(3) {
+      width: 100px;
+      text-align: center;
+    }
+
+    /* Score column */
     th:last-child,
     td:last-child {
       width: 70px;
       text-align: center;
     }
 
-    /* Time: fixed width + centered */
-    th:nth-child(3),
-    td:nth-child(3) {
-      width: 90px;
-      text-align: center;
-    }
-
-    /* Name: take remaining space + wrap nicely */
+    /* Name column: take remaining space, allow wrapping */
     th:nth-child(2),
     td:nth-child(2) {
       width: auto;
@@ -185,14 +179,13 @@
       overflow-wrap: anywhere;
       text-align: left;
     }
-    /* Each player name on its own line */
     td:nth-child(2) div {
       display: block;
       margin: 2px 0 0;
       white-space: normal;
     }
 
-    /* Rank cell layout */
+    /* Rank cell layout for medals etc */
     .rank-cell {
       display: flex;
       justify-content: center;
@@ -220,57 +213,64 @@
     tbody tr:nth-child(odd){ background:#fff; }
     tbody tr:hover{ background:#eef5ff; transition: background .2s; }
 
-    /* Podium rows */
     .podium-1 { background: #ffeaa7 !important; font-weight: 700; font-family: 'Poppins', sans-serif; }
     .podium-2 { background: #dfe6e9 !important; font-weight: 700; font-family: 'Poppins', sans-serif; }
     .podium-3 { background: #fab1a0 !important; font-weight: 700; font-family: 'Poppins', sans-serif; }
 
-    /* Remove borders inside podium rows */
     .podium-1 td,
     .podium-2 td,
     .podium-3 td { border-bottom: none !important; }
 
-    /* Mobile: bigger center logo */
-    @media (max-width: 400px){
-      .top-center { margin-top: 56px; }
-      .top-left-logo { height: 32px; }
+    /* Mobile Overrides */
+    @media (max-width: 480px) {
+      th, td { padding: 12px 10px; }
+
+      /* Rank narrower */
+      th:first-child,
+      td:first-child { width: 36px; }
+
+      /* Time smaller */
+      th:nth-child(3),
+      td:nth-child(3) { width: 80px; }
+
+      /* Score smaller */
+      th:last-child,
+      td:last-child { width: 50px; }
+
+      /* Name gets more space — remaining width, wrap nicely */
+      th:nth-child(2),
+      td:nth-child(2) {
+        width: auto;
+        white-space: normal;
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      th, td { padding: 10px 8px; }
+
+      th:first-child,
+      td:first-child { width: 30px; }
+
+      th:nth-child(3),
+      td:nth-child(3) { width: 70px; }
+
+      th:last-child,
+      td:last-child { width: 45px; }
+
+      th:nth-child(2),
+      td:nth-child(2) {
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 400px) {
       .top-center img {
-        height: 100px;   /* bigger logo on mobile */
+        height: 110px; /* change this to your preferred mobile logo height */
         max-width: 90vw;
       }
     }
 
-    /* 🔎 Mobile layout: prioritize Name + Time, shorten Rank + Score */
-    @media (max-width: 480px){
-      th, td { padding: 12px 12px; }
-
-      th:first-child,
-      td:first-child { width: 42px; }        /* Rank tighter */
-      th:last-child,
-      td:last-child  { width: 60px; }        /* Score tighter */
-
-      th:nth-child(3),
-      td:nth-child(3) { width: 88px; }       /* Time compact */
-
-      th:nth-child(2),
-      td:nth-child(2) {                      /* Name gets the rest */
-        width: auto;
-      }
-    }
-
-    /* Ultra-narrow phones */
-    @media (max-width: 360px){
-      th, td { padding: 10px 10px; }
-
-      th:first-child,
-      td:first-child { width: 36px; }        /* Rank even tighter */
-      th:last-child,
-      td:last-child  { width: 56px; }        /* Score even tighter */
-      th:nth-child(3),
-      td:nth-child(3) { width: 84px; }       /* Time a touch tighter */
-    }
-
-    /* Reduce motion */
     @media (prefers-reduced-motion: reduce){
       * { animation: none !important; transition: none !important; }
     }
@@ -311,7 +311,6 @@
   </div>
 
   <script>
-    // Convert "hh:mm:ss" or "m:ss" to total seconds for proper sorting
     function timeToSeconds(str) {
       const parts = (str || '').trim().split(':').map(Number);
       if (parts.some(n => Number.isNaN(n))) return Infinity;
@@ -320,7 +319,6 @@
       return Number(str);
     }
 
-    // Smooth scroll respecting reduced motion
     function smoothScrollIntoView(el){
       if(!el) return;
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -340,7 +338,6 @@
         const first = (lines[0] || '').toLowerCase();
         const hasHeader = first.includes('name') && first.includes('time');
 
-        // default header if missing: Name,Time,Score
         let header = ['name','time','score'];
         let dataLines = lines;
 
@@ -352,7 +349,6 @@
         const nameI = header.indexOf('name') !== -1 ? header.indexOf('name') : header.indexOf('name1');
         const name2I = header.indexOf('name2');
         const timeI = header.indexOf('time');
-        // accept either "score" or legacy "points"
         const scoreI = header.indexOf('score') !== -1 ? header.indexOf('score') : header.indexOf('points');
 
         const rows = dataLines
@@ -366,10 +362,8 @@
           score: scoreI >= 0 ? (cols[scoreI] || '0') : '0'
         }));
 
-        // Sort by lowest time, then by name
         data.sort((a, b) => a.timeSec - b.timeSec || a.name.localeCompare(b.name));
 
-        // Sequential ranking: 1,2,3,4,...
         data.forEach((d, idx) => d.rank = idx + 1);
 
         if (!data.length) {
@@ -383,8 +377,7 @@
           else if (d.rank === 2) tr.classList.add('podium-2');
           else if (d.rank === 3) tr.classList.add('podium-3');
 
-          // Medal image with emoji fallback
-          const medalImg = d.rank===1 ? 'gold.png' : d.rank===2 ? 'silver.png' : d.rank===3 ? 'bronze.png' : '';
+          const medalImg = d.rank === 1 ? 'gold.png' : d.rank === 2 ? 'silver.png' : d.rank === 3 ? 'bronze.png' : '';
           const medalTag = medalImg
             ? `<img src="${medalImg}" alt="medal" loading="lazy" onerror="this.replaceWith(document.createTextNode('${d.rank===1?'🥇':d.rank===2?'🥈':d.rank===3?'🥉':''}'))">`
             : '';
@@ -408,7 +401,7 @@
       const leaderboardBox = document.getElementById("leaderboardBox");
       leaderboardBox.style.display = "block";
       leaderboardBox.classList.remove("fade-animation");
-      void leaderboardBox.offsetWidth; // restart animation
+      void leaderboardBox.offsetWidth;
       leaderboardBox.classList.add("fade-animation");
 
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -418,15 +411,15 @@
         pair: 'data2.csv'
       };
 
-      const index = tab === 'solo' ? 0 : 1;
+      const index = (tab === 'solo') ? 0 : 1;
       document.querySelectorAll('.tab-btn')[index].classList.add('active');
       loadCSV(files[tab]);
 
       smoothScrollIntoView(leaderboardBox);
     }
 
-    // Auto-open Solo on load
     window.addEventListener('DOMContentLoaded', () => switchTab('solo'));
   </script>
 </body>
 </html>
+
