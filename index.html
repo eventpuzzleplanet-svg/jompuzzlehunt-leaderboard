@@ -122,7 +122,7 @@
       display: none; /* shown by JS */
     }
 
-    /* Scrollable table wrapper */
+    /* Scrollable table wrapper with sticky header */
     .table-wrap{
       width: 100%;
       overflow: auto;
@@ -131,72 +131,37 @@
       outline: 1px solid rgba(0,0,0,0.06);
       max-height: 68dvh;
       background: #fff;
+      background:
+        linear-gradient(to right, #fff, rgba(255,255,255,0)) left center / 16px 100% no-repeat,
+        linear-gradient(to left, #fff, rgba(255,255,255,0)) right center / 16px 100% no-repeat;
     }
 
-    /* Table layout fixed for column widths */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-    }
-
+    table { width: 100%; border-collapse: collapse; }
     th, td {
       padding: 14px 16px;
       border-bottom: 1px solid #eee;
+      text-align: left;
       vertical-align: middle;
       font-size: clamp(13px, 3.6vw, 15px);
       font-weight: 500;
-      white-space: nowrap;
+      white-space: nowrap; /* default: no wrap for all cells */
     }
 
-    /* Rank column: slim + centered */
+    /* Center the Rank column (header + cells) */
     th:first-child,
-    td:first-child {
-      width: 60px;
-      text-align: center;
-      border-bottom: none !important; /* remove silver line */
-    }
-
-    /* Score column: slim + centered */
-    th:last-child,
-    td:last-child {
-      width: 80px;
-      text-align: center;
-    }
-
-    /* Time column: fixed width + centered */
-    th:nth-child(3),
-    td:nth-child(3) {
-      width: 100px;
-      text-align: center;
-    }
-
-    /* Name column: takes remaining space */
-    th:nth-child(2),
-    td:nth-child(2) {
-      width: auto;
-      white-space: normal;
-      line-height: 1.35;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-    }
-    td:nth-child(2) div {
-      display: block;
-      margin: 2px 0 0;
-    }
+    td:first-child { text-align: center; }
 
     /* Rank cell layout */
     .rank-cell {
       display: flex;
-      justify-content: center;
-      align-items: center;
+      justify-content: center;   /* horizontally center */
+      align-items: center;       /* vertically align */
       gap: 6px;
       font-weight: 700;
       font-family: 'Poppins', sans-serif;
     }
     .rank-cell img { height: 20px; }
 
-    /* Table header */
     thead th {
       position: sticky;
       top: 0;
@@ -219,23 +184,40 @@
     .podium-2 { background: #dfe6e9 !important; font-weight: 700; font-family: 'Poppins', sans-serif; }
     .podium-3 { background: #fab1a0 !important; font-weight: 700; font-family: 'Poppins', sans-serif; }
 
-    /* Remove divider lines in podium rows */
+    /* Remove divider lines inside podium rows */
     .podium-1 td,
     .podium-2 td,
     .podium-3 td {
       border-bottom: none !important;
     }
 
-    /* Mobile adjustments */
-    @media (max-width: 400px){
-      .top-center { margin-top: 56px; }
-      .top-left-logo { height: 32px; }
-      .top-center img {
-        height: 100px;   /* bigger logo on mobile */
-        max-width: 90vw;
-      }
+    /* Remove silver line under rank numbers */
+    td:first-child {
+      border-bottom: none !important;
     }
 
+    /* Allow stacking & nice wrapping ONLY in the Name column */
+    td:nth-child(2) {
+      white-space: normal;     /* enable wrapping for names */
+      line-height: 1.35;
+    }
+    /* Each player name acts like its own row */
+    td:nth-child(2) div {
+      display: block;
+      margin: 2px 0 0;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+
+    /* Tiny phones */
+    @media (max-width: 400px){
+      .top-center { margin-top: 80px; }
+      .top-left-logo { height: 32px; }
+      .top-center img { height: 80px; }
+    }
+
+    /* Reduce motion */
     @media (prefers-reduced-motion: reduce){
       * { animation: none !important; transition: none !important; }
     }
@@ -276,15 +258,16 @@
   </div>
 
   <script>
-    // Convert "hh:mm:ss" or "m:ss" to total seconds
+    // Convert "hh:mm:ss" or "m:ss" to total seconds for proper sorting
     function timeToSeconds(str) {
       const parts = (str || '').trim().split(':').map(Number);
       if (parts.some(n => Number.isNaN(n))) return Infinity;
       if (parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
       if (parts.length === 2) return parts[0]*60 + parts[1];
-      return Number(str);
+      return Number(str); // fallback if plain seconds
     }
 
+    // Smooth scroll respecting reduced motion
     function smoothScrollIntoView(el){
       if(!el) return;
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -304,6 +287,7 @@
         const first = (lines[0] || '').toLowerCase();
         const hasHeader = first.includes('name') && first.includes('time');
 
+        // default header if missing: Name,Time,Score
         let header = ['name','time','score'];
         let dataLines = lines;
 
@@ -315,6 +299,7 @@
         const nameI = header.indexOf('name') !== -1 ? header.indexOf('name') : header.indexOf('name1');
         const name2I = header.indexOf('name2');
         const timeI = header.indexOf('time');
+        // accept either "score" or legacy "points"
         const scoreI = header.indexOf('score') !== -1 ? header.indexOf('score') : header.indexOf('points');
 
         const rows = dataLines
@@ -328,7 +313,10 @@
           score: scoreI >= 0 ? (cols[scoreI] || '0') : '0'
         }));
 
+        // Sort by lowest time, then by name
         data.sort((a, b) => a.timeSec - b.timeSec || a.name.localeCompare(b.name));
+
+        // Sequential ranking: 1,2,3,4,...
         data.forEach((d, idx) => d.rank = idx + 1);
 
         if (!data.length) {
@@ -342,6 +330,7 @@
           else if (d.rank === 2) tr.classList.add('podium-2');
           else if (d.rank === 3) tr.classList.add('podium-3');
 
+          // Medal image with emoji fallback
           const medalImg = d.rank===1 ? 'gold.png' : d.rank===2 ? 'silver.png' : d.rank===3 ? 'bronze.png' : '';
           const medalTag = medalImg
             ? `<img src="${medalImg}" alt="medal" loading="lazy" onerror="this.replaceWith(document.createTextNode('${d.rank===1?'🥇':d.rank===2?'🥈':d.rank===3?'🥉':''}'))">`
@@ -366,7 +355,7 @@
       const leaderboardBox = document.getElementById("leaderboardBox");
       leaderboardBox.style.display = "block";
       leaderboardBox.classList.remove("fade-animation");
-      void leaderboardBox.offsetWidth;
+      void leaderboardBox.offsetWidth; // restart animation
       leaderboardBox.classList.add("fade-animation");
 
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -383,6 +372,7 @@
       smoothScrollIntoView(leaderboardBox);
     }
 
+    // Auto-open Solo on load
     window.addEventListener('DOMContentLoaded', () => switchTab('solo'));
   </script>
 </body>
