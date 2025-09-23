@@ -352,7 +352,7 @@
 
           const medalImg = d.rank === 1 ? 'gold.png' : d.rank === 2 ? 'silver.png' : d.rank === 3 ? 'bronze.png' : '';
           const medalTag = medalImg
-            ? `<img src="${medalImg}" alt="medal" loading="lazy" onerror="this.replaceWith(document.createTextNode('${d.rank===1?'🥇':d.rank===2?'🥈':d.rank===3?'🥉':''}'))">`
+            ? `<img src="${medalImg}" alt="medal" loading="lazy" onerror="this.style.display='none';">`
             : '';
 
           tr.innerHTML = `
@@ -395,3 +395,4 @@
   </script>
 </body>
 </html>
+
