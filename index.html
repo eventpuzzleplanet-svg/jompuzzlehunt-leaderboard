@@ -43,6 +43,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    /* Top-left Logo (fixed) */
     .top-left-logo {
       position: fixed;
       top: calc(var(--safe-top) + 12px);
@@ -53,6 +54,7 @@
       z-index: 20;
     }
 
+    /* Top Center Logo + Title */
     .top-center {
       display: flex;
       flex-direction: column;
@@ -77,17 +79,18 @@
       letter-spacing: .5px;
     }
 
+    /* Tabs */
     .tabs {
-      position: static;
-      z-index: auto;
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      padding: 8px 12px;
-      margin: 6px 0 10px;
-      background: transparent;
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
+     position: static;
+     z-index: auto;
+     display: flex;
+     justify-content: center;
+     gap: 10px;
+     padding: 8px 12px;
+     margin: 6px 0 10px;
+     background: transparent;
+     -webkit-backdrop-filter: none;
+     backdrop-filter: none;
     }
     .tab-btn {
       min-height: 44px;
@@ -107,6 +110,7 @@
     .tab-btn:hover { background: #dcdcdc; }
     .tab-btn.active { background: var(--brand); color: #fff; }
 
+    /* Card */
     .leaderboard {
       max-width: 720px;
       margin: 12px auto 60px;
@@ -115,9 +119,10 @@
       box-shadow: var(--shadow);
       overflow: hidden;
       padding: 8px;
-      display: none;
+      display: none; /* shown by JS */
     }
 
+    /* Scrollable table wrapper with sticky header */
     .table-wrap{
       width: 100%;
       overflow: auto;
@@ -139,7 +144,7 @@
       vertical-align: middle;
       font-size: clamp(13px, 3.6vw, 15px);
       font-weight: 500;
-      white-space: nowrap; /* default for all cells */
+      white-space: nowrap; /* default: no wrap for all cells */
     }
 
     /* Center the Rank column (header + cells) */
@@ -149,8 +154,8 @@
     /* Rank cell layout */
     .rank-cell {
       display: flex;
-      justify-content: center;  /* center number + medal */
-      align-items: center;
+      justify-content: center;   /* horizontally center */
+      align-items: center;       /* vertically align */
       gap: 6px;
       font-weight: 700;
       font-family: 'Poppins', sans-serif;
@@ -179,24 +184,40 @@
     .podium-2 { background: #dfe6e9 !important; font-weight: 700; font-family: 'Poppins', sans-serif; }
     .podium-3 { background: #fab1a0 !important; font-weight: 700; font-family: 'Poppins', sans-serif; }
 
+    /* Remove divider lines inside podium rows */
     .podium-1 td,
     .podium-2 td,
     .podium-3 td {
-      border-bottom: none
+      border-bottom: none !important;
     }
 
-    /* Allow stacking only in the Name column */
+    /* Remove silver line under rank numbers */
+    td:first-child {
+      border-bottom: none !important;
+    }
+
+    /* Allow stacking & nice wrapping ONLY in the Name column */
     td:nth-child(2) {
+      white-space: normal;     /* enable wrapping for names */
+      line-height: 1.35;
+    }
+    /* Each player name acts like its own row */
+    td:nth-child(2) div {
+      display: block;
+      margin: 2px 0 0;
+      word-break: break-word;
+      overflow-wrap: anywhere;
       white-space: normal;
-      line-height: 1.3;
     }
 
+    /* Tiny phones */
     @media (max-width: 400px){
       .top-center { margin-top: 56px; }
       .top-left-logo { height: 32px; }
       .top-center img { height: 64px; }
     }
 
+    /* Reduce motion */
     @media (prefers-reduced-motion: reduce){
       * { animation: none !important; transition: none !important; }
     }
@@ -204,18 +225,22 @@
 </head>
 <body>
 
+  <!-- Top-left Logo -->
   <img src="logo.png" alt="Top Left Logo" class="top-left-logo" loading="lazy" />
 
+  <!-- Top Center Logo then Title -->
   <div class="top-center">
     <img src="jom logo.png" alt="Logo" loading="lazy" />
     <h1>Leaderboard</h1>
   </div>
 
+  <!-- Sticky Tabs -->
   <div class="tabs" id="tabs">
     <button class="tab-btn" onclick="switchTab('solo')">Solo</button>
     <button class="tab-btn" onclick="switchTab('pair')">Pair</button>
   </div>
 
+  <!-- Card + Table -->
   <div class="leaderboard" id="leaderboardBox" aria-live="polite">
     <div class="table-wrap">
       <table id="leaderboardTable">
@@ -227,20 +252,22 @@
             <th>Score</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody><!-- filled by JS --></tbody>
       </table>
     </div>
   </div>
 
   <script>
+    // Convert "hh:mm:ss" or "m:ss" to total seconds for proper sorting
     function timeToSeconds(str) {
       const parts = (str || '').trim().split(':').map(Number);
       if (parts.some(n => Number.isNaN(n))) return Infinity;
       if (parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
       if (parts.length === 2) return parts[0]*60 + parts[1];
-      return Number(str);
+      return Number(str); // fallback if plain seconds
     }
 
+    // Smooth scroll respecting reduced motion
     function smoothScrollIntoView(el){
       if(!el) return;
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -260,6 +287,7 @@
         const first = (lines[0] || '').toLowerCase();
         const hasHeader = first.includes('name') && first.includes('time');
 
+        // default header if missing: Name,Time,Score
         let header = ['name','time','score'];
         let dataLines = lines;
 
@@ -271,6 +299,7 @@
         const nameI = header.indexOf('name') !== -1 ? header.indexOf('name') : header.indexOf('name1');
         const name2I = header.indexOf('name2');
         const timeI = header.indexOf('time');
+        // accept either "score" or legacy "points"
         const scoreI = header.indexOf('score') !== -1 ? header.indexOf('score') : header.indexOf('points');
 
         const rows = dataLines
@@ -284,7 +313,10 @@
           score: scoreI >= 0 ? (cols[scoreI] || '0') : '0'
         }));
 
+        // Sort by lowest time, then by name
         data.sort((a, b) => a.timeSec - b.timeSec || a.name.localeCompare(b.name));
+
+        // Sequential ranking: 1,2,3,4,...
         data.forEach((d, idx) => d.rank = idx + 1);
 
         if (!data.length) {
@@ -298,6 +330,7 @@
           else if (d.rank === 2) tr.classList.add('podium-2');
           else if (d.rank === 3) tr.classList.add('podium-3');
 
+          // Medal image with emoji fallback
           const medalImg = d.rank===1 ? 'gold.png' : d.rank===2 ? 'silver.png' : d.rank===3 ? 'bronze.png' : '';
           const medalTag = medalImg
             ? `<img src="${medalImg}" alt="medal" loading="lazy" onerror="this.replaceWith(document.createTextNode('${d.rank===1?'🥇':d.rank===2?'🥈':d.rank===3?'🥉':''}'))">`
@@ -322,7 +355,7 @@
       const leaderboardBox = document.getElementById("leaderboardBox");
       leaderboardBox.style.display = "block";
       leaderboardBox.classList.remove("fade-animation");
-      void leaderboardBox.offsetWidth;
+      void leaderboardBox.offsetWidth; // restart animation
       leaderboardBox.classList.add("fade-animation");
 
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -339,8 +372,8 @@
       smoothScrollIntoView(leaderboardBox);
     }
 
+    // Auto-open Solo on load
     window.addEventListener('DOMContentLoaded', () => switchTab('solo'));
   </script>
 </body>
 </html>
-
