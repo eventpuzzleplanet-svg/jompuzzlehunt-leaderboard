@@ -136,7 +136,13 @@
         linear-gradient(to left, #fff, rgba(255,255,255,0)) right center / 16px 100% no-repeat;
     }
 
-    table { width: 100%; border-collapse: collapse; }
+    /* Make column widths stick */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
     th, td {
       padding: 14px 16px;
       border-bottom: 1px solid #eee;
@@ -144,18 +150,53 @@
       vertical-align: middle;
       font-size: clamp(13px, 3.6vw, 15px);
       font-weight: 500;
-      white-space: nowrap; /* default: no wrap for all cells */
+      white-space: nowrap; /* default */
     }
 
-    /* Center the Rank column (header + cells) */
+    /* Rank: slim + centered + remove silver line */
     th:first-child,
-    td:first-child { text-align: center; }
+    td:first-child {
+      width: 50px;
+      text-align: center;
+      border-bottom: none !important;
+    }
+
+    /* Score: slim + centered */
+    th:last-child,
+    td:last-child {
+      width: 70px;
+      text-align: center;
+    }
+
+    /* Time: fixed width + centered */
+    th:nth-child(3),
+    td:nth-child(3) {
+      width: 90px;
+      text-align: center;
+    }
+
+    /* Name: take remaining space + wrap nicely */
+    th:nth-child(2),
+    td:nth-child(2) {
+      width: auto;
+      white-space: normal;
+      line-height: 1.35;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      text-align: left;
+    }
+    /* Each player name on its own line */
+    td:nth-child(2) div {
+      display: block;
+      margin: 2px 0 0;
+      white-space: normal;
+    }
 
     /* Rank cell layout */
     .rank-cell {
       display: flex;
-      justify-content: center;   /* horizontally center */
-      align-items: center;       /* vertically align */
+      justify-content: center;
+      align-items: center;
       gap: 6px;
       font-weight: 700;
       font-family: 'Poppins', sans-serif;
@@ -184,37 +225,49 @@
     .podium-2 { background: #dfe6e9 !important; font-weight: 700; font-family: 'Poppins', sans-serif; }
     .podium-3 { background: #fab1a0 !important; font-weight: 700; font-family: 'Poppins', sans-serif; }
 
-    /* Remove divider lines inside podium rows */
+    /* Remove borders inside podium rows */
     .podium-1 td,
     .podium-2 td,
-    .podium-3 td {
-      border-bottom: none !important;
-    }
+    .podium-3 td { border-bottom: none !important; }
 
-    /* Remove silver line under rank numbers */
-    td:first-child {
-      border-bottom: none !important;
-    }
-
-    /* Allow stacking & nice wrapping ONLY in the Name column */
-    td:nth-child(2) {
-      white-space: normal;     /* enable wrapping for names */
-      line-height: 1.35;
-    }
-    /* Each player name acts like its own row */
-    td:nth-child(2) div {
-      display: block;
-      margin: 2px 0 0;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-      white-space: normal;
-    }
-
-    /* Tiny phones */
+    /* Mobile: bigger center logo */
     @media (max-width: 400px){
-      .top-center { margin-top: 80px; }
+      .top-center { margin-top: 56px; }
       .top-left-logo { height: 32px; }
-      .top-center img { height: 80px; }
+      .top-center img {
+        height: 100px;   /* bigger logo on mobile */
+        max-width: 90vw;
+      }
+    }
+
+    /* 🔎 Mobile layout: prioritize Name + Time, shorten Rank + Score */
+    @media (max-width: 480px){
+      th, td { padding: 12px 12px; }
+
+      th:first-child,
+      td:first-child { width: 42px; }        /* Rank tighter */
+      th:last-child,
+      td:last-child  { width: 60px; }        /* Score tighter */
+
+      th:nth-child(3),
+      td:nth-child(3) { width: 88px; }       /* Time compact */
+
+      th:nth-child(2),
+      td:nth-child(2) {                      /* Name gets the rest */
+        width: auto;
+      }
+    }
+
+    /* Ultra-narrow phones */
+    @media (max-width: 360px){
+      th, td { padding: 10px 10px; }
+
+      th:first-child,
+      td:first-child { width: 36px; }        /* Rank even tighter */
+      th:last-child,
+      td:last-child  { width: 56px; }        /* Score even tighter */
+      th:nth-child(3),
+      td:nth-child(3) { width: 84px; }       /* Time a touch tighter */
     }
 
     /* Reduce motion */
@@ -234,7 +287,7 @@
     <h1>Leaderboard</h1>
   </div>
 
-  <!-- Sticky Tabs -->
+  <!-- Tabs -->
   <div class="tabs" id="tabs">
     <button class="tab-btn" onclick="switchTab('solo')">Solo</button>
     <button class="tab-btn" onclick="switchTab('pair')">Pair</button>
@@ -264,7 +317,7 @@
       if (parts.some(n => Number.isNaN(n))) return Infinity;
       if (parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
       if (parts.length === 2) return parts[0]*60 + parts[1];
-      return Number(str); // fallback if plain seconds
+      return Number(str);
     }
 
     // Smooth scroll respecting reduced motion
