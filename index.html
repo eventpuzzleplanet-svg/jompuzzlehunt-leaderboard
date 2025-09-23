@@ -143,7 +143,6 @@
       white-space: nowrap;
     }
 
-    /* Rank column */
     th:first-child,
     td:first-child {
       width: 50px;
@@ -151,7 +150,6 @@
       border-bottom: none !important;
     }
 
-    /* Time column */
     th:nth-child(3),
     td:nth-child(3) {
       width: 88px;
@@ -159,14 +157,14 @@
       white-space: nowrap;
     }
 
-    /* Score column */
+    /* ✅ Updated Score column */
     th:last-child,
     td:last-child {
-      width: 43px;
+      width: 60px;
       text-align: center;
+      white-space: nowrap;
     }
 
-    /* Name column: takes all remaining space */
     th:nth-child(2),
     td:nth-child(2) {
       width: auto;
@@ -220,7 +218,6 @@
       border-bottom: none !important;
     }
 
-    /* Responsive tweaks */
     @media (max-width: 480px) {
       th, td {
         padding: 10px 8px;
@@ -233,29 +230,15 @@
         font-size: 12px;
       }
 
-      th:nth-child(2),
-      td:nth-child(2) {
-        font-size: 13px;
-      }
-
-      td:nth-child(2) div {
-        font-size: 13px;
-      }
-    }
-
-    @media (max-width: 360px) {
-      th, td {
-        font-size: 12px;
-        padding: 8px 6px;
-      }
-
-      th:nth-child(3),
-      td:nth-child(3) {
+      /* ✅ Mobile Score width override */
+      th:last-child,
+      td:last-child {
         width: 43px;
+        font-size: 12px;
       }
 
       td:nth-child(2) div {
-        font-size: 12px;
+        font-size: 13px;
       }
     }
 
@@ -273,22 +256,18 @@
 </head>
 <body>
 
-  <!-- Top-left Logo -->
   <img src="logo.png" alt="Top Left Logo" class="top-left-logo" loading="lazy" />
 
-  <!-- Top Center Logo then Title -->
   <div class="top-center">
     <img src="jom logo.png" alt="Logo" loading="lazy" />
     <h1>Leaderboard</h1>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs" id="tabs">
     <button class="tab-btn" onclick="switchTab('solo')">Solo</button>
     <button class="tab-btn" onclick="switchTab('pair')">Pair</button>
   </div>
 
-  <!-- Card + Table -->
   <div class="leaderboard" id="leaderboardBox" aria-live="polite">
     <div class="table-wrap">
       <table id="leaderboardTable">
@@ -300,7 +279,7 @@
             <th>Score</th>
           </tr>
         </thead>
-        <tbody><!-- filled by JS --></tbody>
+        <tbody></tbody>
       </table>
     </div>
   </div>
@@ -358,7 +337,6 @@
         }));
 
         data.sort((a, b) => a.timeSec - b.timeSec || a.name.localeCompare(b.name));
-
         data.forEach((d, idx) => d.rank = idx + 1);
 
         if (!data.length) {
@@ -417,5 +395,3 @@
   </script>
 </body>
 </html>
-
-
